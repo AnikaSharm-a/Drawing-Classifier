@@ -35,6 +35,7 @@ class DrawingClassifier:
         self.classes_prompt()
         self.init_gui()
         
+    # prompt user for project name and class names and setup/load data
     def classes_prompt(self):
         msg = Tk()
         msg.withdraw()
@@ -75,5 +76,125 @@ class DrawingClassifier:
             os.mkdir(self.class3)
             os.chdir("..")
     
+    # initialize the GUI
     def init_gui(self):
+        WIDTH, HEIGHT = 500, 500
+        WHITE = (255, 255, 255)
+        
+        self.root = Tk()
+        self.root.title(f"Drawing Classifier v0.1 - {self.proj_name}")
+
+        self.canvas = Canvas(self.root, width=WIDTH-10, height=HEIGHT-10, bg=WHITE)
+        self.canvas.pack(expand=YES, fill=BOTH)
+        self.canvas.bind("<B1-Motion>", self.paint) # bind event of moving the mouse with left button pressed to the paint function
+
+        self.image1 = PIL.Image.new("RGB", (WIDTH, HEIGHT), WHITE)
+        self.draw = PIL.ImageDraw.Draw(self.image1)
+
+        # button frame and columns
+        btn_frame = Frame(self.root)
+        btn_frame.pack(fill=X, side=BOTTOM)
+        btn_frame.columnconfigure(0, weight=1)
+        btn_frame.columnconfigure(1, weight=1)
+        btn_frame.columnconfigure(2, weight=1)
+
+        # BUTTONS
+
+        # class buttons
+        class1_btn = Button(btn_frame, text=self.class1, command=lambda: self.save(1))
+        class1_btn.grid(row=0, column=0, sticky=W+E) # place button in grid
+
+        class2_btn = Button(btn_frame, text=self.class2, command=lambda: self.save(2))
+        class2_btn.grid(row=0, column=1, sticky=W+E)
+
+        class3_btn = Button(btn_frame, text=self.class3, command=lambda: self.save(3))
+        class3_btn.grid(row=0, column=2, sticky=W+E)
+
+        # brush size adjustment and clear buttons
+        bm_btn = Button(btn_frame, text="Brush-", command=self.brushminus)
+        bm_btn.grid(row=1, column=0, sticky=W+E)
+
+        clear_btn = Button(btn_frame, text="Clear", command=self.clear)
+        clear_btn.grid(row=1, column=1, sticky=W+E)
+
+        bp_btn = Button(btn_frame, text="Brush+", command=self.brushplus)
+        bp_btn.grid(row=1, column=2, sticky=W+E)
+
+        # train, save and load buttons
+        train_btn = Button(btn_frame, text="Train Model", command=self.train_model)
+        train_btn.grid(row=2, column=0, sticky=W+E)
+
+        save_btn = Button(btn_frame, text="Save Model", command=self.save_model)
+        save_btn.grid(row=2, column=1, sticky=W+E)
+
+        load_btn = Button(btn_frame, text="Load Model", command=self.load_model)
+        load_btn.grid(row=2, column=2, sticky=W+E)
+
+        # change and predict model and save everything buttons
+        change_btn = Button(btn_frame, text="Change Model", command=self.rotate_model)
+        change_btn.grid(row=3, column=0, sticky=W+E)
+
+        predict_btn = Button(btn_frame, text="Predict", command=self.predict)
+        predict_btn.grid(row=3, column=1, sticky=W+E)
+
+        save_everything_btn = Button(btn_frame, text="Save Everything", command=self.save_everything)
+        save_everything_btn.grid(row=3, column=2, sticky=W+E)
+
+        # status label
+        self.status_label = Label(self.root, text=f"Current Model: {type(self.clf).__name__}")
+        self.status_label.config(font=("Arial", 10))
+        self.status_label.grid(row=4, column=1, sticky=W+E)
+
+        # handle window closing and start the process
+        self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
+        self.root.attributes('-topmost', True)
+        self.root.mainloop()
+
+    # paint on the canvas
+    def paint(self, event):
         pass
+
+    # save the current drawing to the appropriate class folder
+    def save(self, class_num):
+        pass
+
+    # brush size decrease
+    def brushminus(self):
+        pass
+    
+    # brush size increase
+    def brushplus(self):
+        pass
+
+    # clear the canvas
+    def clear(self):
+        pass
+
+    # train the model with the current data
+    def train_model(self):
+        pass
+
+    # save the model
+    def save_model(self):
+        pass
+
+    # load the model
+    def load_model(self):
+        pass
+
+    # rotate between different ML models
+    def rotate_model(self):
+        pass
+
+    # predict the class of the current drawing
+    def predict(self):
+        pass
+
+    # save all data
+    def save_everything(self):
+        pass
+
+    # handle window closing event
+    def on_closing(self):
+        pass
+
