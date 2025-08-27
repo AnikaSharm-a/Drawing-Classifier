@@ -7,6 +7,7 @@ from tkinter import messagebox, simpledialog
 
 import numpy as np
 import PIL # Pillow - Python Imaging Library
+from PIL import Image, ImageDraw
 import cv2 as cv
 
 # Machine Learning models
@@ -84,7 +85,7 @@ class DrawingClassifier:
         self.root = Tk()
         self.root.title(f"Drawing Classifier v0.1 - {self.proj_name}")
 
-        self.canvas = Canvas(self.root, width=WIDTH-10, height=HEIGHT-10, bg=WHITE)
+        self.canvas = Canvas(self.root, width=WIDTH-10, height=HEIGHT-10, bg="white")
         self.canvas.pack(expand=YES, fill=BOTH)
         self.canvas.bind("<B1-Motion>", self.paint) # bind event of moving the mouse with left button pressed to the paint function
 
@@ -141,7 +142,7 @@ class DrawingClassifier:
         save_everything_btn.grid(row=3, column=2, sticky=W+E)
 
         # status label
-        self.status_label = Label(self.root, text=f"Current Model: {type(self.clf).__name__}")
+        self.status_label = Label(btn_frame, text=f"Current Model: {type(self.clf).__name__}")
         self.status_label.config(font=("Arial", 10))
         self.status_label.grid(row=4, column=1, sticky=W+E)
 
@@ -150,25 +151,44 @@ class DrawingClassifier:
         self.root.attributes('-topmost', True)
         self.root.mainloop()
 
-    # paint on the canvas
+    # paint on the canvas and image
     def paint(self, event):
-        pass
+        x1, y1 = (event.x - 1), (event.y - 1)
+        x2, y2 = (event.x + 1), (event.y + 1)
+        self.canvas.create_rectangle(x1, y1, x2, y2, fill="black", width=self.brush_width)
+        self.draw.rectangle([x1, y1, x2 + self.brush_width, y2 + self.brush_width], fill = "black", width=self.brush_width)
 
     # save the current drawing to the appropriate class folder
     def save(self, class_num):
-        pass
+        self.image1.save("temp.png")
+        img = PIL.Image.open("temp.png")
+        img.thumbnail((50, 50), PIL.Image.Resampling.LANCZOS) # resize image to 50x50
+        
+        if class_num == 1:
+            img.save(f"{self.proj_name}/{self.class1}/{self.class1_counter}.png", "PNG")
+            self.class1_counter += 1
+        elif class_num == 2:
+            img.save(f"{self.proj_name}/{self.class2}/{self.class2_counter}.png", "PNG")
+            self.class2_counter += 1
+        elif class_num == 3:
+            img.save(f"{self.proj_name}/{self.class3}/{self.class3_counter}.png", "PNG")
+            self.class3_counter += 1
+        
+        self.clear()
 
     # brush size decrease
     def brushminus(self):
-        pass
+        if self.brush_width > 1:
+            self.brush_width -= 1
     
     # brush size increase
     def brushplus(self):
-        pass
+        self.brush_width += 1
 
     # clear the canvas
     def clear(self):
-        pass
+        self.canvas.delete("all")
+        self.draw.rectangle([0, 0, 1000, 1000], fill="white")
 
     # train the model with the current data
     def train_model(self):
@@ -198,3 +218,4 @@ class DrawingClassifier:
     def on_closing(self):
         pass
 
+DrawingClassifier()
