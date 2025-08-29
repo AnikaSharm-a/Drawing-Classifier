@@ -3,7 +3,7 @@ import pickle
 
 # GUI
 from tkinter import * 
-from tkinter import messagebox, simpledialog
+from tkinter import messagebox, simpledialog, filedialog
 
 import numpy as np
 import PIL # Pillow - Python Imaging Library
@@ -16,6 +16,7 @@ from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import LogisticRegression
 
 class DrawingClassifier:
     
@@ -192,30 +193,106 @@ class DrawingClassifier:
 
     # train the model with the current data
     def train_model(self):
-        pass
+        img_list = np.array([]) # list of all image pixels
+        class_list = np.array([]) # list of all image classes
+
+        for x in range(1, self.class1_counter):
+            img = cv.imread(f"{self.proj_name}/{self.class1}/{x}.png")[:, :, 0]
+            img = img.reshape(2500)
+            img_list = np.append(img_list, [img])
+            class_list = np.append(class_list, [1])
+
+        for x in range(1, self.class2_counter):
+            img = cv.imread(f"{self.proj_name}/{self.class2}/{x}.png")[:, :, 0]
+            img = img.reshape(2500)
+            img_list = np.append(img_list, [img])
+            class_list = np.append(class_list, [2])
+        
+        for x in range(1, self.class3_counter):
+            img = cv.imread(f"{self.proj_name}/{self.class3}/{x}.png")[:, :, 0]
+            img = img.reshape(2500)
+            img_list = np.append(img_list, [img])
+            class_list = np.append(class_list, [3])
+        
+        img_list = img_list.reshape(self.class1_counter - 1 + self.class2_counter - 1 + self.class3_counter - 1, 2500)
+        
+        self.clf.fit(img_list, class_list)
+
+        messagebox.showinfo("Drawing Classifier", "Model successfully trained!", parent=self.root)
 
     # save the model
     def save_model(self):
-        pass
+        file_path = filedialog.asksaveasfilename(defaultextension="pickle")
+        with open(file_path, "wb") as f:
+            pickle.dump(self.clf, f)
+        messagebox.showinfo("Drawing Classifier", "Model successfully saved!", parent=self.root)
 
     # load the model
     def load_model(self):
-        pass
+        file_path = filedialog.askopenfilename()
+        with open(file_path, "rb") as f:
+            self.clf = pickle.load(f)
+        messagebox.showinfo("Drawing Classifier", "Model successfully loaded!", parent=self.root)
 
     # rotate between different ML models
     def rotate_model(self):
-        pass
+        if isinstance(self.clf, LinearSVC):
+            self.clf = KNeighborsClassifier()
+        elif isinstance(self.clf, KNeighborsClassifier):
+            self.clf = LogisticRegression()
+        elif isinstance(self.clf, LogisticRegression):
+            self.clf = DecisionTreeClassifier()
+        elif isinstance(self.clf, DecisionTreeClassifier):
+            self.clf = RandomForestClassifier()
+        elif isinstance(self.clf, RandomForestClassifier):
+            self.clf = GaussianNB()
+        elif isinstance(self.clf, GaussianNB):
+            self.clf = LinearSVC()
+        
+        self.status_label.config(text=f"Current Model: {type(self.clf).__name__}")
 
     # predict the class of the current drawing
     def predict(self):
-        pass
+        self.image1.save("temp.png")
+        img = PIL.Image.open("temp.png")
+        img.thumbnail((50, 50), PIL.Image.Resampling.LANCZOS)
+        img.save("predictshape.png", "PNG")
+
+        img = cv.imread("predictshape.png")[:, :, 0]
+        img = img.reshape(2500)
+        prediction = self.clf.predict([img])
+
+        if prediction[0] == 1:
+            messagebox.showinfo("Drawing Classifier", f"The drawing is probably a {self.class1}", parent=self.root)
+        elif prediction[0] == 2:
+            messagebox.showinfo("Drawing Classifier", f"The drawing is probably a {self.class2}", parent=self.root)
+        elif prediction[0] == 3:
+            messagebox.showinfo("Drawing Classifier", f"The drawing is probably a {self.class3}", parent=self.root)
 
     # save all data
     def save_everything(self):
-        pass
+        data = {
+            'c1': self.class1,
+            'c2': self.class2,
+            'c3': self.class3,
+            'c1c': self.class1_counter,
+            'c2c': self.class2_counter,
+            'c3c': self.class3_counter,
+            'clf': self.clf,
+            'pname': self.proj_name
+        }
+        with open(f"{self.proj_name}/{self.proj_name}_data.pickle", "wb") as f:
+            pickle.dump(data, f)
+
+        messagebox.showinfo("Drawing Classifier", "Project successfully saved!", parent=self.root)    
 
     # handle window closing event
     def on_closing(self):
-        pass
+        answer = messagebox.askyesnocancel("Quit?", "Do you want to save your work?", parent=self.root)
+        if answer is not None:    
+            if answer:
+                self.save_everything()
+            self.root.destroy()
+            exit()
 
 DrawingClassifier()
